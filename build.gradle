@@ -1,0 +1,115 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'signing'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    mavenCentral()
+}
+
+javadoc {
+    options{
+        encoding "UTF-8"
+        charSet 'UTF-8'
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version "${version}"
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name = "solid"
+                description = 'solid library'
+                url = 'https://github.com/thegenius/solid'
+
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "thegenius"
+                        name = "thegenius"
+                        email = "thegenius@vip.qq.com"
+                    }
+                }
+                scm {
+                    url = 'https://github.com/thegenius/solid'
+                    connection = 'scm:git:git://github.com/thegenius/solid.git'
+                    connection = 'scm:git:git://github.com/thegenius/solid.git'
+                    developerConnection = 'scm:git:ssh://git@github.com:thegenius/solid.git'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            // 如果version以SNAPSHOT结尾就会上传到快照仓库，如果不是就上传到release仓库
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = "${sonatypeUsername}"
+                password = "${sonatypePassword}"
+            }
+        }
+
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+dependencies {
+
+    compileOnly 'org.projectlombok:lombok:1.18.2'
+    annotationProcessor 'org.projectlombok:lombok:1.18.2'
+
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+
+
+    compile group: 'io.github.classgraph', name: 'classgraph', version: '4.8.102'
+
+    compile group: 'javax.inject', name: 'javax.inject', version: '1'
+    compile group: 'com.baomidou', name: 'mybatis-plus', version: '3.4.2'
+    compile group: 'com.github.pagehelper', name: 'pagehelper', version: '5.2.0'
+    compile group: 'com.zaxxer', name: 'HikariCP', version: '4.0.1'
+
+
+    compile group: 'com.google.inject', name: 'guice', version: '4.2.3'
+
+    testCompile group: 'com.h2database', name: 'h2', version: '1.4.200'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.2'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.2'
+
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
