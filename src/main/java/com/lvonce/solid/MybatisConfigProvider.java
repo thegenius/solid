@@ -2,6 +2,8 @@ package com.lvonce.solid;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInterceptor;
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.mapping.Environment;
@@ -54,6 +56,8 @@ public class MybatisConfigProvider implements Provider<MultiContainer<MybatisCon
                     registry.addMapper(mapperClass);
                 }
             });
+            PageInterceptor interceptor = new PageInterceptor();
+            config.addInterceptor(interceptor);
 
             xmlMappers.forEach((mapperName)-> {
                 InputStream stream = getClass().getClassLoader().getResourceAsStream(mapperName);
