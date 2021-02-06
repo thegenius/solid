@@ -48,5 +48,11 @@ public class MapperTest {
         Person result = personMapper.selectById(1);
         Assert.assertEquals(person.getName(), result.getName());
 
+        Person result2 = personMapper.getStudentById(1);
+        Assert.assertEquals(person.getName(), result2.getName());
+
+        Person result3 = personMapper.getStudentByName("wang");
+        Assert.assertEquals(person.getName(), result3.getName());
+
     }
 }

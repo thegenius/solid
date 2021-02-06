@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lvonce.solid.PersonMapper">
+    <select id="getStudentById" parameterType="int" resultType="com.lvonce.solid.Person">
+        select * from person where id = #{id}
+    </select>
+
+    <select id="getStudentByName" parameterType="String" resultType="com.lvonce.solid.Person">
+        select * from person where name = #{name}
+    </select>
+
+</mapper>

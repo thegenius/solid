@@ -1,6 +1,7 @@
 package com.lvonce.solid;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.google.common.io.Resources;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -9,12 +10,15 @@ import io.github.classgraph.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.sql.DataSource;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Getter
@@ -28,6 +32,8 @@ public class ClasspathAware extends AbstractModule {
     private final Injector injector = Guice.createInjector();
     private final Map<String, DataSource> sourceMap = new LinkedHashMap<>();
     private final Map<String, Class<BaseMapper>> mappers = new LinkedHashMap<>();
+    private final List<String> xmlMappers = new ArrayList<>();
+
 
     public ClasspathAware(String env) {
         this.env = env;
@@ -51,6 +57,13 @@ public class ClasspathAware extends AbstractModule {
     @Named("classpath-aware")
     public Map<String, Class<BaseMapper>> provideMappers() {
         return mappers;
+    }
+
+
+    @Provides
+    @Named("classpath-aware-xml-mapper")
+    public List<String> provideXMLMappers() {
+        return xmlMappers;
     }
 
 
@@ -85,8 +98,17 @@ public class ClasspathAware extends AbstractModule {
         }
     }
 
+    private void handleXMLMapper(Resource resource) {
+        try {
+            log.info("xml mapper: {}", resource.getPathRelativeToClasspathElement());
+            xmlMappers.add(resource.getPathRelativeToClasspathElement());
+        } catch (Exception ex) {
+            log.error("handleXMLMapper error: {}", ex.getMessage());
+        }
+    }
 
     public void scan() {
+
         ClassGraph graph = new ClassGraph().enableAllInfo().acceptPackages("*");
         try (ScanResult scanResult = graph.scan()) {
             ClassInfoList list
@@ -101,5 +123,14 @@ public class ClasspathAware extends AbstractModule {
             mapperList.forEach(this::handleMapper);
             log.info("mapper list: {}", mapperList);
         }
+        ClassGraph xmlMapperGraph = new ClassGraph().acceptPathsNonRecursive("mappers");
+        try (ScanResult result = xmlMapperGraph.scan()) {
+            ResourceList resources = result.getResourcesWithExtension(".xml");
+            for (Resource resource : resources) {
+                handleXMLMapper(resource);
+            }
+        }
+
+
     }
 }
